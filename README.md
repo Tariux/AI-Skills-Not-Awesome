@@ -1,40 +1,56 @@
-# AI-Skills-Not-Awesome
+# AI Skills Not Awesome
 
-A curated collection of operational system prompts and behavioral patterns for AI assistants, LLM agents, and prompt engineers. Each `.skill.md` file can be injected as a primary system instruction to enforce specific reasoning, execution, or formatting behaviors.
+A curated collection of high‑precision system prompts for LLM‑powered assistants.
+Each `.skill.md` file is a drop‑in instruction set that can be copied directly into any
+chat session to instantly shape the assistant’s behavior, reasoning, and output style.
 
+## Quick Start
+
+1. Open any `.skill.md` file.
+2. Copy the **entire file** (including the YAML frontmatter).
+3. Paste it into your system prompt or first user message.
+4. The assistant will parse the metadata and adopt the embedded instruction.
+
+## Format
+
+All skills follow a **Markdown + YAML frontmatter** schema, inspired by platforms like
+[skills.sh](https://skills.sh). The frontmatter contains machine‑readable metadata; the
+body is the exact system prompt you inject.
+
+```yaml
 ---
-
-## File Reference
-
-| File | Description |
-| :--- | :--- |
-| `Absolute-Mode.skill.md` | Enforces decisive execution without confirmation requests; suppresses redundant explanations and prioritizes direct action. |
-| `Analyzer.skill.md` | Deconstructs input (code, text, data) into atomic components, maps causal relationships, and outputs a structured layer-by-layer analysis. |
-| `Audit.skill.md` | Evaluates code, documentation, or outputs against defined quality metrics (security, performance, readability) and returns a prioritized issue report. |
-| `Combo.skill.md` | Chains or parallelizes two or more skills into a single pipeline to produce integrated multi-expertise outputs. |
-| `Debugging.skill.md` | Steps through errors systematically, isolates root causes, and proposes verified fixes with minimal side effects. |
-| `Documentation.skill.md` | Generates or refines technical documentation, API references, and inline comments following standard formatting conventions. |
-| `Optimizer.skill.md` | Refactors and tunes code or logic for improved speed, memory usage, or maintainability without altering core functionality. |
-| `Planner.skill.md` | Breaks down complex tasks into ordered, verifiable sub-tasks with clear dependencies and estimated effort markers. |
-| `Simplifier.skill.md` | Reduces complexity by removing redundancies, flattening nested structures, and translating jargon into plain language. |
-| `Test-Writing.skill.md` | Designs unit, integration, or end-to-end test suites covering edge cases, boundaries, and failure modes for given codebases. |
-| `other/` | Contains supplementary resources, auxiliary templates, or experimental skill drafts not yet promoted to the root level. |
-
+name: "Skill Name"
+slug: "skill-slug"
+version: "1.0.0"
+description: "A one‑line summary."
+author: "Tariux"
+license: "MIT"
+source: "https://github.com/Tariux/AI-Skills-Not-Awesome"
+tags: ["tag1", "tag2"]
+category: "Category"
+compatibility: "universal"
+mode: "system-prompt"
 ---
+```
 
-## Usage
+## Skill Catalog
 
-Copy the content of any `.skill.md` file into your system prompt or initial user message. Optionally, combine multiple skills via `Combo.skill.md` for compound workflows.
+| Slug | Name | Category | Description |
+|------|------|----------|-------------|
+| `absolute-mode` | Absolute Mode | Behavioral | Decisive execution, no social padding. |
+| `analyzer` | Project Analyzer | Code Analysis | Structured dependency and workflow report. |
+| `audit` | Package Audit | Code Analysis | Rigorous technical audit with severity ratings. |
+| `combo` | Combo Developer | Meta | Auto‑routes to the correct skill based on request. |
+| `debugging` | Debugging | Developer Workflow | Root‑cause isolation and minimal fix proposal. |
+| `documentation` | Documentation | Developer Workflow | Generates or fills gaps in project documentation. |
+| `no-slop` | No‑Slop | Writing | Fidelity‑first prose audit and anti‑slop rewrite. |
+| `optimizer` | Performance Optimizer | Code Analysis | Systems‑level optimization with trade‑off notes. |
+| `planner` | Planner | Developer Workflow | Actionable, dependency‑aware task breakdown. |
+| `simplifier` | Code Simplifier | Developer Workflow | KISS/YAGNI refactoring, zero new functionality. |
+| `test-writing` | Test Engineer | Developer Workflow | Medium‑coverage test suite setup and gap filling. |
+| `freelance-bid-analyzer` | Freelance Bid Analyzer | Specialized Advisory | Scope, effort, risk, and pricing analysis for bids. |
+| `open-source-advisor` | Open Source Advisor | Specialized Advisory | Health, suitability, and dependency risk evaluation. |
 
----
+## License
 
-## Requirements
-
-- An LLM or AI agent platform that accepts system-level prompts.
-- No external dependencies or installations required.
-
----
-
-## Contribution
-
-Add new `.skill.md` files following the established format: clear title, objective, step-by-step instructions, and a concrete output example.
+MIT © [Tariux](https://github.com/Tariux)
