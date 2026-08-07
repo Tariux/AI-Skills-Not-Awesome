@@ -12,8 +12,6 @@ skills add https://github.com/Tariux/AI-Skills-Not-Awesome
 You’ll be prompted to pick the skills you want:
 
 ```
-┌   skills
-│
 ◇  Source: https://github.com/Tariux/AI-Skills-Not-Awesome.git
 │
 ◇  Found 13 skills
