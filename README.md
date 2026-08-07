@@ -1,37 +1,8 @@
 # AI Skills Not Awesome
 
 A curated collection of high‑precision system prompts for LLM‑powered assistants.
-Each `.skill.md` file is a drop‑in instruction set that can be copied directly into any
+Each `SKILL.md` file is a drop‑in instruction set that can be copied directly into any
 chat session to instantly shape the assistant’s behavior, reasoning, and output style.
-
-## Quick Start
-
-1. Open any `.skill.md` file.
-2. Copy the **entire file** (including the YAML frontmatter).
-3. Paste it into your system prompt or first user message.
-4. The assistant will parse the metadata and adopt the embedded instruction.
-
-## Format
-
-All skills follow a **Markdown + YAML frontmatter** schema, inspired by platforms like
-[skills.sh](https://skills.sh). The frontmatter contains machine‑readable metadata; the
-body is the exact system prompt you inject.
-
-```yaml
----
-name: "Skill Name"
-slug: "skill-slug"
-version: "1.0.0"
-description: "A one‑line summary."
-author: "Tariux"
-license: "MIT"
-source: "https://github.com/Tariux/AI-Skills-Not-Awesome"
-tags: ["tag1", "tag2"]
-category: "Category"
-compatibility: "universal"
-mode: "system-prompt"
----
-```
 
 ## Skill Catalog
 
