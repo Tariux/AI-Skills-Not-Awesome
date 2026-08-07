@@ -1,4 +1,3 @@
-```markdown
 # AI Skills Not Awesome
 
 A curated collection of high‑precision system prompts for LLM‑powered assistants, packaged for the **[skills.sh](https://skills.sh)** ecosystem.  
@@ -58,4 +57,3 @@ The YAML metadata ensures the skill is both human‑readable and machine‑parse
 ## License
 
 MIT © [Tariux](https://github.com/Tariux)
-```
