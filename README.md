@@ -1,8 +1,41 @@
+```markdown
 # AI Skills Not Awesome
 
-A curated collection of high‑precision system prompts for LLM‑powered assistants.
-Each `SKILL.md` file is a drop‑in instruction set that can be copied directly into any
-chat session to instantly shape the assistant’s behavior, reasoning, and output style.
+A curated collection of high‑precision system prompts for LLM‑powered assistants, packaged for the **[skills.sh](https://skills.sh)** ecosystem.  
+Each skill lives in its own directory with a `SKILL.md` file that can be dropped directly into any chat session, or installed instantly via the `skills` CLI.
+
+## Quick Install (skills CLI)
+
+```bash
+skills add https://github.com/Tariux/AI-Skills-Not-Awesome
+```
+
+You’ll be prompted to pick the skills you want:
+
+```
+┌   skills
+│
+◇  Source: https://github.com/Tariux/AI-Skills-Not-Awesome.git
+│
+◇  Found 13 skills
+│
+◆  Select skills to install (space to toggle)
+│  ◼ Absolute Mode (Enforces decisive execution without confirmation requests…)
+│  ◼ Code Simplifier (Rewrites code to its simplest possible form while preserv…)
+│  ◼ Combo Developer (Automatically routes requests to the correct skill…)
+│  …
+└
+```
+
+## Manual Usage
+
+If you don’t use the CLI, you can still grab any skill directly:
+
+1. Open the `skills/<slug>/SKILL.md` file.
+2. Copy the **entire file** (YAML frontmatter + body).
+3. Paste it into your system prompt or first user message.
+
+The YAML metadata ensures the skill is both human‑readable and machine‑parseable.
 
 ## Skill Catalog
 
@@ -25,3 +58,4 @@ chat session to instantly shape the assistant’s behavior, reasoning, and outpu
 ## License
 
 MIT © [Tariux](https://github.com/Tariux)
+```
