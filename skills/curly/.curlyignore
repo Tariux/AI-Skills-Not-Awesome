@@ -1,0 +1,5 @@
+# Curly runtime cache — do not commit
+.curly/
+node_modules/
+__pycache__/
+*.pyc

@@ -1,0 +1,18 @@
+{
+  "name": "curly",
+  "version": "3.0.0",
+  "description": "Codebase-aware engineering workflow: profile, match, complexity, benchmark, prove.",
+  "private": true,
+  "engines": { "node": ">=18", "python": ">=3.9" },
+  "scripts": {
+    "curly": "node scripts/node/curly.mjs",
+    "profile": "node scripts/node/profile.mjs",
+    "match": "node scripts/node/matcher.mjs",
+    "complexity": "node scripts/node/complexity.mjs",
+    "bench": "node scripts/node/microbench.mjs",
+    "py-complexity": "python3 scripts/python/complexity.py",
+    "py-bench": "python3 scripts/python/bench.py",
+    "choose": "python3 scripts/python/choose.py",
+    "ci": "node scripts/node/curly.mjs --ci"
+  }
+}

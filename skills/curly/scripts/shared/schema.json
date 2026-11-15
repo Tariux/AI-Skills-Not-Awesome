@@ -1,0 +1,75 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Curly unified result schema",
+  "type": "object",
+  "properties": {
+    "tool": { "type": "string" },
+    "version": { "type": "string" },
+    "engine": { "type": "string" },
+    "language": { "type": "string" },
+    "path": { "type": "string" },
+    "cached": { "type": "boolean" },
+    "error": { "type": "string" },
+    "fallback": { "type": "boolean" },
+    "files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "path": { "type": "string" },
+          "language": { "type": "string" },
+          "engine": { "type": "string" },
+          "functions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": { "type": "string" },
+                "file": { "type": "string" },
+                "line": { "type": "integer" },
+                "end": { "type": "integer" },
+                "loc": { "type": "integer" },
+                "params": { "type": "integer" },
+                "cyclomatic": { "type": "integer" },
+                "cognitive": { "type": "integer" },
+                "maxNesting": { "type": "integer" },
+                "maxLoopDepth": { "type": "integer" },
+                "bigO": { "type": "string" },
+                "smells": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": { "type": "string" },
+                      "line": { "type": "integer" },
+                      "severity": { "enum": ["info", "warn"] },
+                      "msg": { "type": "string" },
+                      "confidence": { "type": "number" }
+                    },
+                    "required": ["id", "line", "severity", "msg"]
+                  }
+                }
+              },
+              "required": ["name", "file", "line", "end", "cyclomatic", "cognitive", "smells"]
+            }
+          },
+          "overBudget": { "type": "integer" },
+          "smellCount": { "type": "integer" }
+        },
+        "required": ["path", "language", "engine", "functions"]
+      }
+    },
+    "summary": {
+      "type": "object",
+      "properties": {
+        "files": { "type": "integer" },
+        "functions": { "type": "integer" },
+        "overBudget": { "type": "integer" },
+        "smells": { "type": "integer" },
+        "engines": { "type": "array", "items": { "type": "string" } },
+        "budget": { "type": "object" }
+      }
+    }
+  },
+  "required": ["tool", "files", "summary"]
+}
