@@ -3,7 +3,7 @@ name: "Curly"
 slug: "curly"
 version: "3.0.0"
 description: "Codebase-aware engineering workflow: profile, match, choose, implement, prove. Finds the closest existing design, scores complexity, and benchmarks before/after."
-author: "Kilo"
+author: "Tariux"
 license: "MIT"
 source: "local"
 tags: ["performance", "complexity", "codebase-aware", "design-matching", "benchmarking", "solid-code", "nodejs", "python"]
