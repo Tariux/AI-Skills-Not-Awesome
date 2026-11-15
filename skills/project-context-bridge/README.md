@@ -30,7 +30,7 @@ Invoke the skill with no task to create a reusable project-wide context handoff.
 
 The skill uses the current agent's repository-reading tools when available. If they are unavailable, it can request the output of the optional scanner below.
 
-## Optional inventory helper
+## Optional Inventory Helper
 
 Requires Node.js; no npm dependencies. Run from the skill directory:
 
@@ -43,6 +43,8 @@ Or, from the target repository root:
 ```bash
 node /path/to/project-context-bridge/scripts/scan-project.cjs . --task "Fix session refresh handling" --budget 4000
 ```
+
+**Privacy note**: The helper includes a git working-tree summary by default. For external sharing, **always use `--no-git`** to omit changed/untracked paths that may reveal private state. The `--no-git` flag is recommended for any handoff leaving your machine.
 
 The helper prints a compact inventory and selected documentation/config excerpts to stdout. It does not write files or modify the repository. It excludes common generated/dependency directories and sensitive files. Review its output before sharing it externally; adjust `--budget`, `--max-files`, or `--max-depth` as needed.
 

@@ -77,7 +77,7 @@ Use only these status labels:
 - `(NEW)` — a new file must be created.
 - `(DELETE)` — an existing file must be removed.
 
-Do not list unchanged files. Do not label a file `(UPDATE)` merely because it was inspected. If the task does not require a repository file change, state that clearly in one concise line. Do not claim to have applied changes to the user's local repository. Avoid emitting code fences around entire files unless the destination platform requires them; if fences are needed, the file path/status must remain the first line of each entry.
+Do not list unchanged files. Do not label a file `(UPDATE)` merely because it was inspected. If the task does not require a repository file change, state that clearly in one concise line. Do not claim to have applied changes to the user's local repository. **If the destination platform requires code fences, wrap each file entry in a fence; the path/status line must remain the first line of each entry.**
 
 ## Missing-context response
 

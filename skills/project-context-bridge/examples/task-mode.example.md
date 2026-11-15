@@ -7,13 +7,13 @@
 TASK-FOCUSED CONTEXT
 
 ## PROJECT
-- Name/type: `inventory-api`, Node.js service.
-- Purpose: Manages stock levels and exposes inventory operations.
+- Name/type: `inventory-api`, Node.js service. [verify from package.json]
+- Purpose: Manages stock levels and exposes inventory operations. [verify from README]
 - Main runtime/framework: Use the actual manifest and configuration; do not infer versions.
 
 ## ARCHITECTURE
-- Route handlers validate transport-level input and delegate business logic to the service layer.
-- The inventory service owns stock invariants; persistence adapters own database access.
+- Route handlers validate transport-level input and delegate business logic to the service layer. [verify from code]
+- The inventory service owns stock invariants; persistence adapters own database access. [verify]
 - Verify the above from current code and documentation before implementation.
 
 ## RULES AND CONSTRAINTS
@@ -22,10 +22,10 @@ TASK-FOCUSED CONTEXT
 - Do not edit unrelated modules or introduce dependencies without a demonstrated need.
 
 ## RELEVANT FILES
-- `src/routes/inventory.ts`: entry point for the affected endpoint.
-- `src/services/inventory-service.ts`: expected owner of stock invariants; inspect actual implementation.
-- `src/adapters/inventory-repository.ts`: persistence boundary.
-- `test/inventory.test.ts`: current expected behavior, if present.
+- `src/routes/inventory.ts`: entry point for the affected endpoint. [verify]
+- `src/services/inventory-service.ts`: expected owner of stock invariants; inspect actual implementation. [verify]
+- `src/adapters/inventory-repository.ts`: persistence boundary. [verify]
+- `test/inventory.test.ts`: current expected behavior, if present. [verify]
 
 ## CURRENT BEHAVIOR / KEY FACTS
 - Include only findings verified from repository sources.

@@ -7,14 +7,14 @@
 GLOBAL CONTEXT ONLY
 
 ## PROJECT
-- Name/type: `inventory-api`, Node.js service.
-- Purpose: Manages inventory updates and exposes a REST API.
+- Name/type: `inventory-api`, Node.js service. [verify exact name from package.json]
+- Purpose: Manages inventory updates and exposes a REST API. [verify from README]
 - Main runtime/framework: Node.js; exact version and framework should be taken from the included manifest/configuration.
 
 ## ARCHITECTURE
-- `src/routes/` registers HTTP routes.
-- `src/services/` owns business rules.
-- `src/adapters/` isolates external persistence/integrations.
+- `src/routes/` registers HTTP routes. [verify from actual files]
+- `src/services/` owns business rules. [verify]
+- `src/adapters/` isolates external persistence/integrations. [verify]
 - Confirm these boundaries against the actual files before relying on them.
 
 ## RULES AND CONSTRAINTS

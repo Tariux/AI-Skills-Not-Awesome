@@ -45,16 +45,17 @@ const CONFIG_NAMES = new Set([
 ]);
 
 function printHelp() {
-  process.stdout.write(`Project Context Bridge — read-only inventory helper\n\nUsage:\n  node scripts/scan-project.cjs [project-root] [options]\n\nOptions:\n  --task TEXT       Rank file paths/docs around a task description\n  --budget N        Approximate output budget in tokens (default ${DEFAULTS.budget})\n  --max-files N     Maximum number of file paths in inventory (default ${DEFAULTS.maxFiles})\n  --max-depth N     Maximum directory depth (default ${DEFAULTS.maxDepth})\n  --include-hidden  Include hidden paths except sensitive/ignored paths\n  --help            Show this help\n\nThe script prints to stdout only; it does not create or modify project files.\nReview output before sharing it with an external service.\n`);
+  process.stdout.write(`Project Context Bridge — read-only inventory helper\n\nUsage:\n  node scripts/scan-project.cjs [project-root] [options]\n\nOptions:\n  --task TEXT           Rank file paths/docs around a task description\n  --budget N            Approximate output budget in tokens (default ${DEFAULTS.budget})\n  --max-files N         Maximum number of file paths in inventory (default ${DEFAULTS.maxFiles})\n  --max-depth N         Maximum directory depth (default ${DEFAULTS.maxDepth})\n  --include-hidden      Include hidden paths except sensitive/ignored paths\n  --no-git              Omit git status summary (recommended for external sharing)\n  --help                Show this help\n\nThe script prints to stdout only; it does not create or modify project files.\nReview output before sharing it with an external service.\n`);
 }
 
 function parseArgs(argv) {
-  const opts = { ...DEFAULTS, task: '', includeHidden: false, root: process.cwd() };
+  const opts = { ...DEFAULTS, task: '', includeHidden: false, noGit: false, root: process.cwd() };
   const positional = [];
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
     if (arg === '--help' || arg === '-h') opts.help = true;
     else if (arg === '--include-hidden') opts.includeHidden = true;
+    else if (arg === '--no-git') opts.noGit = true;
     else if (arg === '--task') {
       if (!argv[i + 1]) throw new Error('--task requires a value.');
       opts.task = argv[++i];
@@ -103,7 +104,7 @@ function isSafeTextFile(filePath) {
 }
 
 function tokenize(text) {
-  const ignored = new Set(['the', 'and', 'for', 'with', 'from', 'this', 'that', 'into', 'when', 'where', 'what', 'how', 'fix', 'make', 'update', 'change', 'add', 'remove', 'implement', 'please', 'project', 'files', 'file', 'need', 'want', 'should', 'could', 'would']);
+  const ignored = new Set(['the', 'and', 'for', 'with', 'from', 'this', 'that', 'into', 'when', 'where', 'what', 'how', 'please', 'project', 'files', 'file', 'need', 'want', 'should', 'could', 'would']);
   return [...new Set((text.toLowerCase().match(/[a-z0-9_./-]{3,}/g) || []).filter((t) => !ignored.has(t)))].slice(0, 40);
 }
 
@@ -137,7 +138,6 @@ function walk(root, opts) {
     for (const entry of entries) {
       if (entry.name === '.' || entry.name === '..') continue;
       if (!opts.includeHidden && entry.name.startsWith('.') && !['.github', '.agents', '.claude', '.cursor', '.vscode'].includes(entry.name)) {
-        // Hidden root metadata is skipped by default, except common instructions/workflow folders.
         if (entry.isDirectory()) continue;
         if (!['.gitignore', '.dockerignore', '.editorconfig', '.npmignore', '.nvmrc', '.node-version'].includes(entry.name)) continue;
       }
@@ -165,7 +165,6 @@ function readExcerpt(file, maxChars) {
     if (stat.size > 2_000_000) return `[omitted: file is larger than 2 MB; inspect the relevant section directly]`;
     let content = fs.readFileSync(file.absolute, 'utf8');
     if (content.includes('\u0000')) return '[omitted: appears to be binary data]';
-    // Reduce accidental leakage if a scanned documentation/config file includes credential-like assignments.
     content = content.split(/\r?\n/).map((line) => {
       if (/\b(password|passwd|secret|access[_-]?token|api[_-]?key|private[_-]?key|client[_-]?secret)\b\s*[:=]\s*\S+/i.test(line)) {
         return line.replace(/([:=]\s*).+$/, '$1[REDACTED]');
@@ -199,7 +198,6 @@ function getGitSummary(root) {
 function chooseExcerpts(files, opts) {
   const candidates = files.filter((file) => {
     const base = file.name.toLowerCase();
-    const ext = path.extname(base);
     const docLike = /\.(?:md|markdown|rst|txt)$/i.test(base);
     const configLike = CONFIG_NAMES.has(base) || /^(?:\.gitignore|\.dockerignore|\.editorconfig|\.nvmrc|\.node-version)$/.test(base);
     return docLike || configLike || (SOURCE_EXT_RE.test(base) && opts.task && file.score >= 2);
@@ -210,7 +208,6 @@ function chooseExcerpts(files, opts) {
   for (const f of candidates) {
     if (selected.length >= opts.maxExcerptFiles) break;
     if (seen.has(f.rel) || isSensitive(f.rel) || LOCK_FILE_RE.test(`/${f.rel}`)) continue;
-    // Only take low-level source excerpts when they score against an explicit task.
     if (SOURCE_EXT_RE.test(f.name) && !/\.(?:md|markdown|rst|txt)$/i.test(f.name) && (!opts.task || f.score < 2)) continue;
     selected.push(f);
     seen.add(f.rel);
@@ -249,9 +246,11 @@ function main() {
   add('- This is a heuristic inventory, not a verified architecture analysis. Review source files before trusting inferred behavior.');
   add('- Sensitive files and lockfiles are excluded; nevertheless review output before sharing externally.');
   add('');
-  add('## Git working-tree summary');
-  add(getGitSummary(opts.root));
-  add('');
+  if (!opts.noGit) {
+    add('## Git working-tree summary');
+    add(getGitSummary(opts.root));
+    add('');
+  }
   add('## File tree');
   for (const file of listed) add(`- \`${file.rel}\`${file.score > 0 ? `  [priority ${file.score}]` : ''}`);
   if (all.length > listed.length) add(`- ... [truncated; ${all.length - listed.length} additional discovered paths not listed]`);
@@ -282,7 +281,24 @@ function main() {
   }
 
   if (!excerpts.length) {
-    out += '\nNo candidate documentation/config files were selected. Inspect the file tree and request the exact source/docs required by the task.\n';
+    if (opts.task) {
+      out += '\nNo candidate documentation/config files were selected. Inspect the file tree and request the exact source/docs required by the task.\n';
+    } else {
+      // Global mode: include top-ranked docs/config even without task
+      const globalCandidates = all.filter(f => {
+        const base = f.name.toLowerCase();
+        return /\.(?:md|markdown|rst|txt)$/i.test(base) || CONFIG_NAMES.has(base);
+      }).slice(0, Math.min(5, opts.maxExcerptFiles));
+      if (globalCandidates.length) {
+        out += '\n[Global mode: showing top documentation/config files]\n';
+        for (const file of globalCandidates) {
+          const snippet = readExcerpt(file, Math.floor(opts.maxExcerptChars / 2));
+          out += `\n### \`${file.rel}\`\n\n\`\`\`text\n${snippet}\n\`\`\``;
+        }
+      } else {
+        out += '\nNo documentation/config files found. Inspect the file tree and request the exact source/docs required.\n';
+      }
+    }
   }
   if (out.length > charBudget) out = `${out.slice(0, charBudget - 100)}\n\n[Output truncated to budget.]\n`;
   process.stdout.write(`${out.trim()}\n`);
