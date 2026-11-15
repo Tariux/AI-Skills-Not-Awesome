@@ -13,7 +13,7 @@ You'll be prompted to pick the skills you want:
 ```
 ◇  Source: https://github.com/Tariux/AI-Skills-Not-Awesome.git
 │
-◇  Found 14 skills
+◇  Found 15 skills
 │
 ◆  Select skills to install (space to toggle)
 │  ◼ Absolute Mode (Enforces decisive execution without confirmation requests…)
@@ -30,6 +30,7 @@ You'll be prompted to pick the skills you want:
 │  ◼ Project Analyzer (Produces a concise, structured analysis report…)
 │  ◼ Project Context Bridge (Builds compact project context for handoff…)
 │  ◼ Test Engineer (Creates or completes a medium-coverage test suite…)
+│  ◼ Whizbang (Unified brainstorming, planning, and execution — idea to verified code)
 └
 ```
 
@@ -61,6 +62,7 @@ The YAML metadata ensures the skill is both human‑readable and machine‑parse
 | `freelance-bid-analyzer` | Freelance Bid Analyzer | Specialized Advisory | Scope, effort ranges with confidence, risk, and assumptions register. |
 | `open-source-advisor` | Open Source Advisor | Specialized Advisory | Health, suitability, dependency risk evaluation with time‑stamped evidence. |
 | `project-context-bridge` | Project Context Bridge | Developer Tools | Compact, privacy‑aware project context for AI handoff. |
+| `whizbang` | Whizbang | Developer Workflow | Unified discovery, planning, and execution — idea to verified code in one skill. |
 
 ## License
 
