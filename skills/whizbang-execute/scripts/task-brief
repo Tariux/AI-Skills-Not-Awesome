@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+# whizbang-execute: Extract task brief and record BASE
+# Usage: task-brief PLAN_FILE TASK_NUMBER
+# Prints: brief: <path> / base: <SHA>
+
+set -euo pipefail
+
+here=$(cd "$(dirname "$0")" && pwd)
+if [ $# -ne 2 ]; then
+  echo "usage: task-brief PLAN_FILE TASK_NUMBER" >&2
+  exit 2
+fi
+
+plan=$1
+n=$2
+[ -f "$plan" ] || { echo "no such plan file: $plan" >&2; exit 2; }
+
+repo=$(git rev-parse --show-toplevel)
+base=$(git rev-parse HEAD)
+
+# Find workspace
+dir=$(grep -l "$plan" "$repo/.whizbang/exec"/*/plan-path 2>/dev/null | head -1 | xargs dirname)
+[ -n "$dir" ] || { echo "workspace not found for plan: $plan" >&2; exit 1; }
+
+out="$dir/task-${n}-brief.md"
+
+# Extract task (simplified from superpowers task-brief)
+TASK_BRIEF_PLAN="$plan" awk -v n="$n" '
+  /^```/ { infence = !infence }
+  !infence && /^#+[ \t]+Task[ \t]/ {
+    id = $0
+    sub(/^#+[ \t]+Task[ \t]+/, "", id)
+    if (match(id, /^[A-Za-z0-9]+(\.[A-Za-z0-9]+)*/) && substr(id, 1, RLENGTH) ~ /[0-9]/) {
+      id = substr(id, 1, RLENGTH)
+      intask = (id == n)
+    }
+  }
+  intask { print }
+' "$plan" > "$out"
+
+if [ ! -s "$out" ]; then
+  echo "task ${n} not found in ${plan}" >&2
+  exit 3
+fi
+
+echo "brief: $out"
+echo "base: $base"

@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+# whizbang-execute: Complete a task — run tests, append to ledger
+# Usage: task-done PLAN_FILE TASK_NUMBER BASE -- TEST_COMMAND [ARGS...]
+# Exit: test command's exit status
+
+set -euo pipefail
+
+if [ $# -lt 5 ] || [ "$4" != "--" ]; then
+  echo "usage: task-done PLAN_FILE TASK_NUMBER BASE -- TEST_COMMAND [ARGS...]" >&2
+  exit 2
+fi
+
+plan=$1
+n=$2
+base=$3
+shift 4
+
+repo=$(git rev-parse --show-toplevel)
+git -C "$repo" rev-parse --verify --quiet "$base" >/dev/null || { echo "bad BASE: $base" >&2; exit 2; }
+
+# Find workspace
+dir=$(grep -l "$plan" "$repo/.whizbang/exec"/*/plan-path 2>/dev/null | head -1 | xargs dirname)
+[ -n "$dir" ] || { echo "workspace not found for plan: $plan" >&2; exit 1; }
+
+log="$dir/task-${n}-tests.log"
+ledger="$dir/progress.md"
+
+# Render command for ledger
+cmd=""
+for a in "$@"; do
+  case "$a" in
+    *[[:space:]\"\;\|\&]*) cmd="$cmd '$a'" ;;
+    *) cmd="$cmd $a" ;;
+  esac
+done
+cmd=${cmd# }
+
+rc=0
+"$@" > "$log" 2>&1 || rc=$?
+
+tail -n 5 "$log"
+if [ "$rc" -ne 0 ]; then
+  echo "task-done: test command exited $rc; Task $n NOT recorded (full output: $log)" >&2
+  exit "$rc"
+fi
+
+last=$(grep -v '^[[:space:]]*$' "$log" | tail -n 1) || last="(no output)"
+[ -f "$ledger" ] || printf '# Whizbang ledger — plan: %s\n' "$plan" > "$ledger"
+line="Task $n: complete (commits $(git -C "$repo" rev-parse --short=7 "$base")..$(git -C "$repo" rev-parse --short=7 HEAD), tests: $cmd → $last)"
+printf '%s\n' "$line" >> "$ledger"
+echo "ledger: $line"

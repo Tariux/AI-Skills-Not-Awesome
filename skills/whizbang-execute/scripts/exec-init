@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+# whizbang-execute: Initialize or resume execution workspace
+# Usage: exec-init PLAN_FILE
+# Prints: WORKSPACE_PATH BASE_SHA
+
+set -euo pipefail
+
+here=$(cd "$(dirname "$0")" && pwd)
+if [ $# -ne 1 ]; then
+  echo "usage: exec-init PLAN_FILE" >&2
+  exit 2
+fi
+
+plan=$1
+[ -f "$plan" ] || { echo "no such plan file: $plan" >&2; exit 2; }
+
+# Reuse sdd-workspace logic for plan-scoped workspace
+sdd="$here/../whizbang-discover/scripts"
+if [ ! -f "$sdd/init-workspace" ]; then
+  sdd="$here/../../whizbang-discover/scripts"
+fi
+
+# Use git repo root for workspace
+repo=$(git rev-parse --show-toplevel)
+base="$repo/.whizbang/exec"
+
+slug=$(basename "$plan" .md)
+plan_dir=$(cd "$(dirname "$plan")" && pwd -P)
+plan_abs="$plan_dir/$(basename "$plan")"
+case "$plan_abs" in
+  "$repo"/*) plan_id=${plan_abs#"$repo"/} ;;
+  *)         plan_id=$plan_abs ;;
+esac
+
+dir="$base/$slug"
+mkdir -p "$dir"
+printf '%s\n' "$plan_id" > "$dir/plan-path"
+
+# Resume check
+LEDGER="$dir/progress.md"
+if grep -q "^# Whizbang ledger" "$LEDGER" 2>/dev/null; then
+  echo "Resuming existing plan workspace"
+else
+  printf '# Whizbang ledger — plan: %s\n' "$plan" > "$LEDGER"
+fi
+
+BASE=$(git rev-parse HEAD)
+echo "workspace: $dir"
+echo "base: $BASE"

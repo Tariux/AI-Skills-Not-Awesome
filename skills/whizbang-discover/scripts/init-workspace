@@ -1,0 +1,78 @@
+#!/usr/bin/env bash
+# whizbang-discover: Initialize isolated workspace for discovery phase
+# Usage: init-workspace [-C DIR] TOPIC
+# Prints: workspace_path
+
+set -euo pipefail
+
+here=$(cd "$(dirname "$0")" && pwd)
+if [ "${1:-}" = "-C" ]; then
+  [ -d "${2:-}" ] || { echo "bad -C directory: ${2:-}" >&2; exit 2; }
+  cd "$2"
+  shift 2
+fi
+
+if [ $# -ne 1 ]; then
+  echo "usage: init-workspace [-C DIR] TOPIC" >&2
+  exit 2
+fi
+
+topic=$1
+
+# Detect existing isolation
+GIT_DIR=$(cd "$(git rev-parse --git-dir 2>/dev/null)" && pwd -P)
+GIT_COMMON=$(cd "$(git rev-parse --git-common-dir 2>/dev/null)" && pwd -P)
+SUPERPROJECT=$(git rev-parse --show-superproject-working-tree 2>/dev/null)
+
+if [ "$GIT_DIR" != "$GIT_COMMON" ] && [ -z "$SUPERPROJECT" ]; then
+  echo "Already in worktree at $(pwd)"
+  echo "$(pwd)"
+  exit 0
+fi
+
+# Ask for consent before creating worktree
+echo "Would you like me to set up an isolated worktree? It protects your current branch from changes."
+echo "Type 'yes' to confirm, or press Enter to work in place."
+read -r CONSENT
+if [ "$CONSENT" != "yes" ]; then
+  echo "Working in place at $(pwd)"
+  echo "$(pwd)"
+  exit 0
+fi
+
+# Determine worktree location
+LOCATION=".worktrees"
+[ -d "worktrees" ] && [ ! -d ".worktrees" ] && LOCATION="worktrees"
+
+# Verify directory is ignored
+if ! git check-ignore -q "$LOCATION" 2>/dev/null; then
+  echo "$LOCATION" >> .gitignore
+  git add .gitignore
+  git commit -m "chore: ignore worktree directory"
+fi
+
+# Create worktree with sanitized branch name
+SAFE_TOPIC=$(echo "$topic" | tr ' ' '-' | tr -cd '[:alnum:]-' | cut -c1-40)
+BRANCH_NAME="discover-${SAFE_TOPIC}-$(date +%s)"
+git worktree add "$LOCATION/$BRANCH_NAME" -b "$BRANCH_NAME"
+cd "$LOCATION/$BRANCH_NAME"
+
+# Project setup
+[ -f package.json ] && npm install
+[ -f Cargo.toml ] && cargo build
+[ -f requirements.txt ] && pip install -r requirements.txt
+[ -f pyproject.toml ] && poetry install
+[ -f go.mod ] && go mod download
+
+# Baseline tests
+TEST_CMD="${WHIZBANG_TEST_CMD:-npm test}"
+if $TEST_CMD >/dev/null 2>&1; then
+  echo "Baseline tests pass"
+else
+  echo "WARNING: Baseline tests failing. Proceed anyway?"
+  read -r PROCEED
+  [ "$PROCEED" = "yes" ] || exit 1
+fi
+
+echo "Workspace ready at $(pwd)"
+echo "$(pwd)"

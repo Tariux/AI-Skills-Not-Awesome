@@ -1,0 +1,120 @@
+#!/usr/bin/env bash
+# whizbang-discover: Start visual companion server for browser-based brainstorming
+# Usage: start-visual [-C DIR] --project-dir PATH [--open] [--host HOST] [--url-host HOST]
+# Prints JSON with server info
+
+set -euo pipefail
+
+here=$(cd "$(dirname "$0")" && pwd)
+PROJECT_DIR=""
+OPEN=false
+HOST="127.0.0.1"
+URL_HOST="localhost"
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -C) [ -d "${2:-}" ] || { echo "bad -C directory: ${2:-}" >&2; exit 2; } cd "$2"; shift 2 ;;
+    --project-dir) PROJECT_DIR="$2"; shift 2 ;;
+    --open) OPEN=true; shift ;;
+    --host) HOST="$2"; shift 2 ;;
+    --url-host) URL_HOST="$2"; shift 2 ;;
+    *) echo "Unknown option: $1" >&2; exit 2 ;;
+  esac
+done
+
+[ -n "$PROJECT_DIR" ] || { echo "--project-dir required" >&2; exit 2; }
+
+SESSION_DIR="$PROJECT_DIR/.whizbang/visual/$(date +%s)-$$"
+mkdir -p "$SESSION_DIR/content" "$SESSION_DIR/state"
+
+# Find frame template and helper
+FRAME_TEMPLATE="$here/../references/frame-template.html"
+HELPER_JS="$here/../references/helper.js"
+
+if [ ! -f "$FRAME_TEMPLATE" ] || [ ! -f "$HELPER_JS" ]; then
+  echo "Missing visual companion assets. Run 'whizbang-discover install-assets' first." >&2
+  exit 1
+fi
+
+# Start server in background
+PORT=$(python3 -c "import socket; s=socket.socket(); s.bind(('', 0)); print(s.getsockname()[1]); s.close()")
+
+cat > "$SESSION_DIR/server.py" << 'PYEOF'
+import http.server, json, os, sys, threading, time, urllib.parse, websockets, asyncio
+from pathlib import Path
+
+CONTENT_DIR = Path(sys.argv[1])
+STATE_DIR = Path(sys.argv[2])
+PORT = int(sys.argv[3])
+HOST = sys.argv[4]
+URL_HOST = sys.argv[5]
+FRAME_TEMPLATE = Path(sys.argv[6])
+HELPER_JS = Path(sys.argv[7])
+
+FRAME = FRAME_TEMPLATE.read_text()
+HELPER = HELPER_JS.read_text()
+
+class Handler(http.server.SimpleHTTPRequestHandler):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, directory=str(CONTENT_DIR), **kwargs)
+    def do_GET(self):
+        parsed = urllib.parse.urlparse(self.path)
+        if parsed.path == '/health':
+            self.send_response(200); self.end_headers(); self.wfile.write(b'ok')
+        elif parsed.path == '/helper.js':
+            self.send_response(200); self.send_header('Content-Type', 'application/javascript'); self.end_headers(); self.wfile.write(HELPER.encode())
+        elif parsed.path == '/' or parsed.path == '/index.html':
+            # Serve newest content file
+            files = sorted(CONTENT_DIR.glob('*.html'), key=lambda f: f.stat().st_mtime, reverse=True)
+            if files:
+                content = files[0].read_text()
+                if content.strip().startswith('<!DOCTYPE') or content.strip().startswith('<html'):
+                    html = content
+                else:
+                    html = FRAME.replace('{{CONTENT}}', content).replace('{{HELPER}}', HELPER)
+                self.send_response(200); self.send_header('Content-Type', 'text/html'); self.end_headers(); self.wfile.write(html.encode())
+            else:
+                self.send_response(404); self.end_headers()
+        elif parsed.path.startswith('/files/'):
+            # Static assets
+            super().do_GET()
+        else:
+            self.send_response(404); self.end_headers()
+    def log_message(self, format, *args):
+        pass
+
+server = http.server.ThreadingHTTPServer((HOST, PORT), Handler)
+threading.Thread(target=server.serve_forever, daemon=True).start()
+
+# Write server info
+info = {
+    "type": "server-started",
+    "port": PORT,
+    "url": f"http://{URL_HOST}:{PORT}/?key={os.urandom(8).hex()}",
+    "screen_dir": str(CONTENT_DIR),
+    "state_dir": str(STATE_DIR)
+}
+Path(STATE_DIR / "server-info").write_text(json.dumps(info))
+print(json.dumps(info))
+
+try:
+    while True: time.sleep(1)
+except KeyboardInterrupt:
+    server.shutdown()
+PYEOF
+
+python3 "$SESSION_DIR/server.py" "$SESSION_DIR/content" "$SESSION_DIR/state" "$PORT" "$HOST" "$URL_HOST" "$FRAME_TEMPLATE" "$HELPER_JS" &
+SERVER_PID=$!
+echo $SERVER_PID > "$SESSION_DIR/server.pid"
+
+# Wait for server to start
+for i in {1..10}; do
+  if [ -f "$SESSION_DIR/state/server-info" ]; then
+    cat "$SESSION_DIR/state/server-info"
+    exit 0
+  fi
+  sleep 0.2
+done
+
+echo "Server failed to start" >&2
+exit 1

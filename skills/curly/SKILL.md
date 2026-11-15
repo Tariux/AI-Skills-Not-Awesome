@@ -1,17 +1,17 @@
 ---
-name: "Curly"
-slug: "curly"
-version: "3.0.0"
-description: "Codebase-aware engineering workflow: profile, match, choose, implement, prove. Finds the closest existing design, scores complexity, and benchmarks before/after."
-author: "Tariux"
-license: "MIT"
-source: "local"
-tags: ["performance", "complexity", "codebase-aware", "design-matching", "benchmarking", "solid-code", "nodejs", "python"]
-category: "Developer Workflow"
-compatibility: "universal"
-mode: "system-prompt"
-output_format: "structured-report"
-runtimes: ["node>=18", "python>=3.9"]
+name: curly
+description: Codebase-aware engineering workflow: profile, match, choose, implement, prove. Finds the closest existing design, scores complexity, and benchmarks before/after. Use when you need evidence-driven code changes that match the repo's existing patterns.
+license: MIT
+metadata:
+  author: Tariux
+  version: "3.0.0"
+  source: local
+  category: Developer Workflow
+  tags: performance, complexity, codebase-aware, design-matching, benchmarking, solid-code, nodejs, python
+  output: structured-report
+  compatibility: universal
+  mode: system-prompt
+  runtimes: ["node>=18", "python>=3.9"]
 ---
 
 # Curly
